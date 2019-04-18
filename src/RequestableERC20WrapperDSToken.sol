@@ -70,9 +70,9 @@ contract RequestableERC20WrapperDSToken is DSToken, RequestableI {
     uint v = decodeTrieValue(trieValue);
 
     if (isExit) {
-      mint(requestor, v);
+      _handleBalance(true, true, requestor, trieKey, v);
     } else {
-      burn(requestor, v);
+      _handleBalance(true, false, requestor, trieKey, v);
     }
 
     emit RequestCreated(isExit, requestor, trieKey, v);
@@ -93,9 +93,9 @@ contract RequestableERC20WrapperDSToken is DSToken, RequestableI {
     uint v = decodeTrieValue(trieValue);
 
     if (isExit) {
-      burn(requestor, v);
+      _handleBalance(false, true, requestor, trieKey, v);
     } else {
-      mint(requestor, v);
+      _handleBalance(false, false, requestor, trieKey, v);
     }
 
     emit RequestCreated(isExit, requestor, trieKey, v);
@@ -110,4 +110,32 @@ contract RequestableERC20WrapperDSToken is DSToken, RequestableI {
        v := mload(add(trieValue, 0x20))
     }
   }
+
+  function _handleBalance(
+      bool isRootChain,
+      bool isExit,
+      address requestor,
+      bytes32 trieKey,
+      uint amount
+  ) internal {
+      /* uint amount = uint(trieValue); */
+
+      if (isRootChain) {
+          if (isExit) {
+              _balances[requestor] = add(_balances[requestor], amount);
+          } else {
+              require(amount <= _balances[requestor]);
+              _balances[requestor] = sub(_balances[requestor], amount);
+            }
+      } else {
+          if (isExit) {
+              require(amount <= _balances[requestor]);
+              _balances[requestor] = sub(_balances[requestor], amount);
+          } else {
+              _balances[requestor] = add(_balances[requestor], amount);
+          }
+      }
+  }
+
+
 }
