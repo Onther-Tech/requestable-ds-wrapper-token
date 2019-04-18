@@ -1,0 +1,6 @@
+name            requestable-erc20-wrapper-ds-token
+description     Requestable Wrapper token implementing ds-token
+version         K99
+
+author          Jake Song <jake.s@onther.io>
+license         Apache-2.0
