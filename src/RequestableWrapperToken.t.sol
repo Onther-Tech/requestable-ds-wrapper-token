@@ -2,12 +2,12 @@ pragma solidity ^0.4.24;
 
 import "ds-test/test.sol";
 
-import "./RequestableERC20WrapperDSToken.sol";
+import "./RequestableWrapperToken.sol";
 import "ds-token/token.sol";
 
 contract RootChain {
-  RequestableERC20WrapperDSToken wrapperToken;
-  constructor(RequestableERC20WrapperDSToken wrapperToken_) public {
+  RequestableWrapperToken wrapperToken;
+  constructor(RequestableWrapperToken wrapperToken_) public {
       wrapperToken = wrapperToken_;
   }
   function doApplyInRootChain(
@@ -20,15 +20,15 @@ contract RootChain {
   }
 }
 
-contract RequestableERC20WrapperDSTokenTest is DSTest {
-    RequestableERC20WrapperDSToken wrapperToken;
+contract RequestableWrapperTokenTest is DSTest {
+    RequestableWrapperToken wrapperToken;
     DSToken token;
     RootChain rootchain;
     address NullAddress = address(0);
 
     function setUp() public {
         token = new DSToken('TEST');
-        wrapperToken = new RequestableERC20WrapperDSToken(true, 'WRAPPER', token);
+        wrapperToken = new RequestableWrapperToken(true, 'WRAPPER', token);
         rootchain = new RootChain(wrapperToken);
         wrapperToken.init(address(rootchain));
         assertTrue(wrapperToken.initialized());

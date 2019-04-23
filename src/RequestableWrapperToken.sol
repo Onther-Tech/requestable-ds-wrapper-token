@@ -8,7 +8,7 @@ import "./RequestableI.sol";
  * @notice  RequestableERC20Wrapper is a requestable token contract that can exchange
  *          another base ERC20 token.
  */
-contract RequestableERC20WrapperDSToken is DSToken, RequestableI {
+contract RequestableWrapperToken is DSToken, RequestableI {
 
   bool public initialized;
   bool public development;
@@ -54,7 +54,7 @@ contract RequestableERC20WrapperDSToken is DSToken, RequestableI {
   }
 
   function getBalanceTrieKey(address _who) public pure returns (bytes32) {
-    return keccak256(abi.encodePacked(bytes32(0), _who));
+    return keccak256(abi.encodePacked(bytes32(4), _who));
   }
 
   function applyRequestInRootChain(
