@@ -65,14 +65,18 @@ contract RequestableWrapperToken is DSToken, RequestableI {
     bytes trieValue
   ) external isInitialized returns (bool success) {
     require(msg.sender == address(rootchain));
-    require(trieKey == getBalanceTrieKey(requestor));
+    /* require(trieKey == getBalanceTrieKey(requestor)); */
 
     uint v = decodeTrieValue(trieValue);
 
-    if (isExit) {
-      _handleBalance(true, true, requestor, trieKey, v);
+    if (trieKey == bytes32(1)) {
+        _handleOwner(true, isExit, requestor, trieKey, v);
+    } else if (trieKey == bytes32(2)) {
+        _handleStopped(true, isExit, requestor, trieKey, v);
+    } else if (trieKey == getBalanceTrieKey(requestor)) {
+        _handleBalance(true, isExit, requestor, trieKey, v);
     } else {
-      _handleBalance(true, false, requestor, trieKey, v);
+        revert();
     }
 
     emit RequestCreated(isExit, requestor, trieKey, v);
@@ -88,14 +92,18 @@ contract RequestableWrapperToken is DSToken, RequestableI {
     bytes trieValue
   ) external returns (bool success) {
     require(development || msg.sender == address(0));
-    require(trieKey == getBalanceTrieKey(requestor));
+    /* require(trieKey == getBalanceTrieKey(requestor)); */
 
     uint v = decodeTrieValue(trieValue);
 
-    if (isExit) {
-      _handleBalance(false, true, requestor, trieKey, v);
+    if (trieKey == bytes32(1)) {
+        _handleOwner(false, isExit, requestor, trieKey, v);
+    } else if (trieKey == bytes32(2)) {
+        _handleStopped(false, isExit, requestor, trieKey, v);
+    } else if (trieKey == getBalanceTrieKey(requestor)) {
+        _handleBalance(false, isExit, requestor, trieKey, v);
     } else {
-      _handleBalance(false, false, requestor, trieKey, v);
+        revert();
     }
 
     emit RequestCreated(isExit, requestor, trieKey, v);
@@ -109,6 +117,56 @@ contract RequestableWrapperToken is DSToken, RequestableI {
     assembly {
        v := mload(add(trieValue, 0x20))
     }
+  }
+
+  function _handleOwner(
+      bool isRootChain,
+      bool isExit,
+      address requestor,
+      bytes32 trieKey,
+      uint v
+  ) internal {
+      address newOwner = address(v);
+
+      if (isRootChain) {
+          if (isExit) {
+              owner = newOwner;
+          } else {
+              require(owner == requestor);
+              require(owner == newOwner);
+          }
+      } else {
+          if (isExit) {
+              require(owner == requestor);
+              require(owner == newOwner);
+          } else {
+              owner = newOwner;
+          }
+      }
+  }
+
+  function _handleStopped(
+      bool isRootChain,
+      bool isExit,
+      address requestor,
+      bytes32 trieKey,
+      uint v
+  ) internal {
+      bool newStopped = v == 0x1;
+
+      if (isRootChain) {
+          if (isExit) {
+              stopped = newStopped;
+          } else {
+              require(isAuthorized(requestor, bytes4(keccak256("stop()"))));
+          }
+      } else {
+          if (isExit) {
+              require(isAuthorized(requestor, bytes4(keccak256("stop()"))));
+          } else {
+              stopped = newStopped;
+          }
+      }
   }
 
   function _handleBalance(
