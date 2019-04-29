@@ -8,7 +8,7 @@ import "./RequestableI.sol";
  * @notice  RequestableERC20Wrapper is a requestable token contract that can exchange
  *          another base ERC20 token.
  */
-contract RequestableWrapperToken is DSToken, RequestableI {
+contract RequestableWrapperToken is DSToken, RequestableWrapperI {
 
   bool public initialized;
   bool public development;
