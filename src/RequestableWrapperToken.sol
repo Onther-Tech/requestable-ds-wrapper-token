@@ -1,14 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "ds-token/token.sol";
-import "./RequestableI.sol";
 
 /**
  * @title   RequestableERC20Wrapper
  * @notice  RequestableERC20Wrapper is a requestable token contract that can exchange
  *          another base ERC20 token.
  */
-contract RequestableWrapperToken is DSToken, RequestableWrapperI {
+contract RequestableWrapperToken is DSToken {
 
   bool public initialized;
   bool public development;
