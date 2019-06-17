@@ -7,7 +7,7 @@ import "ds-token/token.sol";
  * @notice  RequestableERC20Wrapper is a requestable token contract that can exchange
  *          another base ERC20 token.
  */
-contract RequestableWrapperToken is DSToken {
+contract RequestableWrapperToken is DSTokenBase(0), DSStop {
 
   bool public initialized;
   bool public development;
@@ -24,7 +24,7 @@ contract RequestableWrapperToken is DSToken {
     _;
   }
 
-  constructor(bool _development, bytes32 symbol_, ERC20 _token) DSToken(symbol_) public {
+  constructor(bool _development, bytes32 symbol_, ERC20 _token) public {
     development = _development;
     token = _token;
   }
@@ -194,5 +194,24 @@ contract RequestableWrapperToken is DSToken {
       }
   }
 
+    function approve(address guy) public stoppable returns (bool) {
+        return super.approve(guy, uint(-1));
+    }
+
+    function approve(address guy, uint wad) public stoppable returns (bool) {
+        return super.approve(guy, wad);
+    }
+
+    function mint(address to, uint amount) internal {
+        _supply = add(_supply, amount);
+        _balances[to] = add(_balances[to], amount);
+        emit Transfer(address(0), to, amount);
+    }
+
+    function burn(address from, uint amount) internal {
+            _balances[from] = sub(_balances[from], amount);
+            _supply = sub(_supply, amount);
+            emit Transfer(from, address(0), amount);
+    }
 
 }
